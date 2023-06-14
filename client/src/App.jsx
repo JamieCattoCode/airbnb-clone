@@ -1,12 +1,12 @@
-
-import './App.css'
+import React from 'react';
+import './App.css';
 
 function App() {
   return (
-    <div>
+    <div className="bg-red-500">
       App
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
