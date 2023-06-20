@@ -4,9 +4,11 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
+const download = require('image-downloader');
 require('dotenv').config();
 
 const User = require('./models/User');
+const Place = require('./models/Place');
 
 const connectionString = process.env.connection_string;
 const jwtSecret = process.env.jwt_secret
@@ -15,6 +17,7 @@ const bcryptSalt = bcrypt.genSaltSync(10);
 const app = express();
 
 app.use(express.json());
+app.use('/uploads', express.static(__dirname+'/uploads'))
 app.use(cookieParser());
 
 app.use(cors({
@@ -86,6 +89,24 @@ app.get('/profile', (req, res) => {
     } else {
         res.status(400).json('No cookie found.')
     }
+});
+
+app.post('/logout', (req, res) => {
+    res.cookie('userToken', '').json(true);
+});
+
+app.post('/upload-by-link', async (req, res) => {
+    const { link } = req.body;
+
+    const newName = 'photo' + Date.now() + '.jpg';
+    const destinationPath = __dirname + '/uploads/' + newName;
+
+    await download.image({
+        url: link,
+        dest: destinationPath
+    })
+
+    res.json(newName)
 })
 
 app.listen(4000, () => {
