@@ -14,8 +14,7 @@ export function UserContextProvider({ children }) {
           setUser(data);
           setReady(true);
         })
-        .catch((error) => console.log(error))
-        .finally(setReady(true));
+        .catch((error) => console.log(error));
     }
   }, []);
 

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import Perks from './Perks';
 
 function AddPlaceForm() {
@@ -19,8 +20,10 @@ function AddPlaceForm() {
     );
   }
 
-  function addPhotoByLink() {
-    return '';
+  async function addPhotoByLink() {
+    const { data: fileName } = await axios.post('/upload-by-link', { link: photoLink });
+    setAddedPhotos((prev) => [...prev, fileName]);
+    setPhotoLink('');
   }
 
   return (
@@ -48,11 +51,16 @@ function AddPlaceForm() {
             onChange={(e) => setPhotoLink(e.target.value)}
             placeholder="Add using a link..."
           />
-          <button type="button" className="bg-gray-200 px-4 rounded-2xl">
+          <button type="button" onClick={addPhotoByLink} className="bg-gray-200 px-4 rounded-2xl">
             Add&nbsp;photo&nbsp;from&nbsp;link
           </button>
         </div>
-        <div className="mt-2 grid grid-cols-3 lg:grid-cols-6 md:grid-cols-4">
+        <div className="mt-2 grid gap-2 grid-cols-3 lg:grid-cols-6 md:grid-cols-4">
+          {addedPhotos.length > 0 && addedPhotos.map((link) => (
+            <div>
+              <img className="rounded-2xl" src={`http://localhost:4000/uploads/${link}`} alt="destination" />
+            </div>
+          ))}
           <button type="button" className="border bg-transparent rounded-2xl p-8 text-2xl text-gray-600 flex justify-center items-center gap-1">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
