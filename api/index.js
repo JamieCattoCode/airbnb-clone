@@ -124,6 +124,74 @@ app.post('/upload', photosMiddleware.array('photos', 100), (req, res) => {
         uploadedFiles.push(newPath.replace('uploads/', ''));
     }
     res.json(uploadedFiles);
+});
+
+app.post('/places', (req, res) => {
+    const { userToken } = req.cookies;
+    const { 
+        title, addedPhotos, address, description, perks, extraInfo, checkIn, checkOut, maxGuests 
+    } = req.body;
+    jwt.verify(userToken, jwtSecret, {}, async (error, userData) => {
+        if (error) throw error;
+        const placeDoc = await Place.create({
+            owner: userData.id,
+            title,
+            address,
+            photos: addedPhotos,
+            description,
+            perks,
+            extraInfo,
+            checkIn,
+            checkOut,
+            maxGuests
+        });
+        res.json(placeDoc);
+    });
+});
+
+app.get('/places', (req, res) => {
+    const { userToken } = req.cookies;
+    jwt.verify(userToken, jwtSecret, {}, async (error, userData) => {
+        if (error) throw error;
+        const { id } = userData;
+        const placeList = await Place.find({owner: id})
+        res.json(placeList);
+    });
+});
+
+app.get('/places/:id', async (req, res) => {
+    const { id } = req.params;
+    const place = await Place.findById(id);
+    res.json(place);
+});
+
+app.put('/places/:id', (req, res) => {
+    const { id: placeId } = req.params;
+    const { userToken } = req.cookies;
+    const {
+        title, address, addedPhotos, description, perks, extraInfo, checkIn, checkOut, maxGuests,
+      } = req.body;
+
+      
+    jwt.verify(userToken, jwtSecret, {}, async (error, userData) => {
+        if (error) throw error;
+        const placeDoc = await Place.findById(placeId)
+        if (userData.id === placeDoc.owner.toString()) {
+            await Place.findByIdAndUpdate(placeId, {
+                title,
+                address,
+                photos: addedPhotos,
+                description,
+                perks,
+                extraInfo,
+                checkIn,
+                checkOut,
+                maxGuests
+            });
+
+        }
+        res.json(placeDoc);
+});
 })
 
 app.listen(4000, () => {

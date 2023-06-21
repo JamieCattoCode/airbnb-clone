@@ -1,17 +1,42 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+
+import { Navigate, useParams } from 'react-router-dom';
 import Perks from './Perks';
 import PhotoUploader from './PhotoUploader';
 
 function AddPlaceForm() {
+  const { id } = useParams();
+  console.log(id);
+
   const [title, setTitle] = useState('');
   const [address, setAddress] = useState('');
+  const [addedPhotos, setAddedPhotos] = useState([]);
   const [description, setDescription] = useState('');
   const [perks, setPerks] = useState([]);
   const [extraInfo, setExtraInfo] = useState('');
   const [checkIn, setCheckIn] = useState('');
   const [checkOut, setCheckOut] = useState('');
   const [maxGuests, setMaxGuests] = useState(1);
+  const [redirect, setRedirect] = useState(false);
+
+  useEffect(() => {
+    if (!id) {
+      return null;
+    }
+    axios.get(`/places/${id}`).then(({ data }) => {
+      setTitle(data.title);
+      setAddress(data.address);
+      setAddedPhotos(data.photos);
+      setDescription(data.description);
+      setPerks(data.perks);
+      setExtraInfo(data.extraInfo);
+      setCheckIn(data.checkIn);
+      setCheckOut(data.checkOut);
+      setMaxGuests(data.maxGuests);
+    });
+  }, [id]);
 
   function inputHeader(text) {
     return (
@@ -19,9 +44,30 @@ function AddPlaceForm() {
     );
   }
 
+  async function savePlace(event) {
+    event.preventDefault();
+    const formData = {
+      title, address, addedPhotos, description, perks, extraInfo, checkIn, checkOut, maxGuests,
+    };
+    if (id) {
+      await axios.put(`/places/${id}`, formData);
+    } else {
+      await axios.post('/places', formData);
+    }
+    setRedirect(true);
+  }
+
+  function cancel() {
+    setRedirect(true);
+  }
+
+  if (redirect) {
+    return <Navigate to="/profile/places" />;
+  }
+
   return (
     <div>
-      <form>
+      <form onSubmit={savePlace}>
         {inputHeader('Title')}
         <input
           type="text"
@@ -37,7 +83,7 @@ function AddPlaceForm() {
           placeholder="Address"
         />
         {inputHeader('Photos')}
-        <PhotoUploader />
+        <PhotoUploader addedPhotos={addedPhotos} setAddedPhotos={setAddedPhotos} />
         {inputHeader('Description')}
         <textarea
           value={description}
@@ -69,8 +115,9 @@ function AddPlaceForm() {
             <input type="number" value={maxGuests} onChange={(e) => setMaxGuests(e.target.value)} placeholder="1" />
           </div>
         </div>
-        <button type="submit" className="primary my-4">Add Place</button>
+        <button type="submit" className="primary my-4">Save</button>
       </form>
+      <button type="button" className="primary" onClick={cancel}>Cancel</button>
     </div>
   );
 }
