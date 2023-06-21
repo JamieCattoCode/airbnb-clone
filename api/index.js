@@ -149,7 +149,7 @@ app.post('/places', (req, res) => {
     });
 });
 
-app.get('/places', (req, res) => {
+app.get('/user-places', (req, res) => {
     const { userToken } = req.cookies;
     jwt.verify(userToken, jwtSecret, {}, async (error, userData) => {
         if (error) throw error;
