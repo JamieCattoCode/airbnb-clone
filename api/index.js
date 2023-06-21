@@ -5,6 +5,8 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const download = require('image-downloader');
+const multer = require('multer');
+const fs = require('fs');
 require('dotenv').config();
 
 const User = require('./models/User');
@@ -19,6 +21,8 @@ const app = express();
 app.use(express.json());
 app.use('/uploads', express.static(__dirname+'/uploads'))
 app.use(cookieParser());
+
+const photosMiddleware = multer({ dest: 'uploads' })
 
 app.use(cors({
     credentials: true,
@@ -107,6 +111,19 @@ app.post('/upload-by-link', async (req, res) => {
     })
 
     res.json(newName)
+});
+
+app.post('/upload', photosMiddleware.array('photos', 100), (req, res) => {
+    console.log(req.files);
+    for (i = 0; i < req.files.length; i++) {
+        const { path, originalname } = req.files[i];
+        const parts = originalname.split('.');
+        const fileExtension = parts[parts.length-1]
+        const newPath = path + '.' + fileExtension;
+        fs.renameSync(path, newPath);
+        uploadedFiles.push(newPath.replace('uploads/', ''));
+    }
+    res.json(uploadedFiles);
 })
 
 app.listen(4000, () => {

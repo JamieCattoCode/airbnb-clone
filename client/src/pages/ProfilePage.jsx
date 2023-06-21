@@ -14,7 +14,7 @@ function ProfilePage() {
     subpage = 'profile';
   }
 
-  if (!ready) {
+  if (!ready && !user) {
     return <h1>Loading...</h1>;
   }
 
