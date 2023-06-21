@@ -114,7 +114,7 @@ app.post('/upload-by-link', async (req, res) => {
 });
 
 app.post('/upload', photosMiddleware.array('photos', 100), (req, res) => {
-    console.log(req.files);
+    const uploadedFiles = [];
     for (i = 0; i < req.files.length; i++) {
         const { path, originalname } = req.files[i];
         const parts = originalname.split('.');
